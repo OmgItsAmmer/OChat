@@ -1,0 +1,50 @@
+
+import 'package:flutter/material.dart';
+
+import '../../../../utils/constants/colors.dart';
+import '../../../../utils/constants/sizes.dart';
+
+class TRoundedContainer extends StatelessWidget {
+  const TRoundedContainer(
+      {super.key,
+      this.width,
+      this.height,
+       this.radius = TSizes.cardRadiusLg,
+      this.child,
+       this.shadowBorder = false,
+       this.borderColor=TColors.borderPrimary,
+       this.backgroundColor=TColors.white,
+      this.padding,
+      this.margin,
+      this.onTap});
+
+  final double? width ;
+  final double? height;
+  final double radius;
+  final Widget? child;
+  final bool shadowBorder; //showborder
+  final Color borderColor;
+  final Color backgroundColor;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
+  final VoidCallback? onTap;
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+      width: width,
+      height: height,
+      padding: padding,
+      margin: margin,
+      decoration: BoxDecoration(
+      color: backgroundColor,
+      borderRadius: BorderRadius. circular (radius),
+      border: shadowBorder ? Border.all(color: borderColor) : null,
+      
+      ),
+      child: child,
+      ),
+    );// Boxbecoration
+  }
+}

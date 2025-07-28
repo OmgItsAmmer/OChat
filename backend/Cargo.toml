@@ -1,0 +1,73 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2021"  # Changed from 2024 to 2021 for better compatibility
+
+[dependencies]
+# 🌐 WEB SERVER FRAMEWORK
+# Actix-web is a powerful, pragmatic, and extremely fast web framework for Rust
+actix-web = "4.4"
+
+# 📡 WEBSOCKET SUPPORT
+# Actix-web-actors provides WebSocket support through the Actor model
+# This allows us to handle real-time connections efficiently
+actix-web-actors = "4.3"
+# Actix is the actor framework that powers the WebSocket actors
+actix = "0.13"
+
+# ⚡ ASYNC RUNTIME
+# Tokio is the async runtime that powers our entire application
+# It handles all async operations like database queries and WebSocket connections
+tokio = { version = "1.35", features = ["full"] }
+
+# 🗄️ DATABASE INTEGRATION
+# SQLx is an async SQL toolkit that provides compile-time checked queries
+# It's much safer than traditional database libraries
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+
+# 📧 SERIALIZATION/DESERIALIZATION
+# Serde is THE serialization framework for Rust
+# We use it to convert between JSON and Rust structs
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# 🔐 JWT AUTHENTICATION
+# JsonWebToken library for verifying Supabase JWTs
+jsonwebtoken = "9.2"
+
+# 🌍 HTTP CLIENT
+# Reqwest for making HTTP requests (to fetch Supabase JWKS keys)
+reqwest = { version = "0.11", features = ["json"] }
+
+# ⚙️ ENVIRONMENT VARIABLES
+# For loading configuration from .env files
+dotenvy = "0.15"
+
+# 📅 DATE/TIME HANDLING
+# Chrono for handling timestamps in messages
+chrono = { version = "0.4", features = ["serde"] }
+
+# 🔢 UUID GENERATION
+# For generating unique message IDs
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+# 📝 LOGGING
+# Essential for debugging and monitoring in production
+log = "0.4"
+env_logger = "0.10"
+
+# 🔧 UTILITY LIBRARIES
+# Anyhow for better error handling (makes error messages much clearer)
+anyhow = "1.0"
+# Thiserror for creating custom error types
+thiserror = "1.0"
+
+# 🛡️ SECURITY
+# For CORS (Cross-Origin Resource Sharing) middleware
+actix-cors = "0.7"
+# For HTTP authentication middleware (Bearer tokens)
+actix-web-httpauth = "0.8"
+# For base64 encoding/decoding (JWT certificates)
+base64 = "0.21"
+# For URL encoding/decoding (query parameters)
+urlencoding = "2.1"
