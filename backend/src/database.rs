@@ -40,15 +40,28 @@ pub struct User {
 }
 
 // 💬 MESSAGE MODEL
-// Represents a chat message between users
+// Represents a chat message between users (with encryption support)
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Message {
     pub id: Uuid,                    // Unique message ID
     pub sender_id: Uuid,             // Who sent the message
     pub receiver_id: Uuid,           // Who should receive the message
-    pub content: String,             // The actual message text
+    
+    // 🔐 ENCRYPTED CONTENT FIELDS
+    pub encrypted_content: String,   // AES-GCM encrypted message content (base64)
+    pub content_hash: String,        // SHA-256 hash for integrity verification
+    pub encryption_version: i32,     // Version for future encryption upgrades
+    pub nonce: String,               // AES nonce (base64)
+    pub session_key_id: Uuid,        // ID of the session key used
+    
+    // 📝 MESSAGE METADATA
     pub message_type: MessageType,   // Type of message (text, image, etc.)
     pub is_read: bool,               // Whether message has been read
+    pub file_url: Option<String>,    // URL for file attachments
+    pub file_size: Option<i64>,      // File size in bytes
+    pub mime_type: Option<String>,   // MIME type for files
+    
+    // ⏰ TIMESTAMPS
     pub created_at: DateTime<Utc>,   // When message was sent
     pub updated_at: DateTime<Utc>,   // When message was last modified
 }
@@ -72,6 +85,52 @@ pub struct NewMessage {
     pub receiver_id: Uuid,
     pub content: String,
     pub message_type: Option<MessageType>,
+    pub file_url: Option<String>,
+    pub file_size: Option<i64>,
+    pub mime_type: Option<String>,
+}
+
+// 🔐 ENCRYPTION KEY MODEL
+// Represents encryption keys for users
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct EncryptionKey {
+    pub id: Uuid,                    // Unique key ID
+    pub user_id: Uuid,               // User who owns this key
+    pub encrypted_private_key: String, // User's encrypted private key
+    pub public_key: String,          // User's public key (PEM format)
+    pub key_version: i32,            // Key version for rotation
+    pub algorithm: String,           // Encryption algorithm used
+    pub created_at: DateTime<Utc>,   // When key was created
+    pub expires_at: Option<DateTime<Utc>>, // Optional key expiration
+}
+
+// 🔑 SESSION KEY MODEL
+// Represents session keys for conversations
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct ConversationSession {
+    pub id: Uuid,                    // Unique session ID
+    pub user1_id: Uuid,              // First participant
+    pub user2_id: Uuid,              // Second participant
+    pub encrypted_session_key: String, // Encrypted session key
+    pub session_key_hash: String,    // Hash of session key for verification
+    pub is_active: bool,             // Whether session is active
+    pub created_at: DateTime<Utc>,   // When session was created
+    pub last_used: DateTime<Utc>,    // When session was last used
+}
+
+// 📎 MESSAGE ATTACHMENT MODEL
+// Represents file attachments for messages
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
+pub struct MessageAttachment {
+    pub id: Uuid,                    // Unique attachment ID
+    pub message_id: Uuid,            // Associated message
+    pub file_name: String,           // Original file name
+    pub file_url: String,            // File storage URL
+    pub file_size: i64,              // File size in bytes
+    pub mime_type: String,           // MIME type
+    pub encrypted_file_key: Option<String>, // Encrypted file encryption key
+    pub file_hash: String,           // File integrity hash
+    pub created_at: DateTime<Utc>,   // When attachment was created
 }
 
 // 🔗 DATABASE CONNECTION POOL

@@ -8,6 +8,7 @@ import '../../../../../../core/utils/constants/sizes.dart';
 import '../../../../../../core/utils/constants/text_strings.dart';
 import '../../../../../../core/utils/validators/validation.dart';
 import '../../../controllers/auth_controller.dart';
+import '../../../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../forget_password/forget_password.dart';
 
 

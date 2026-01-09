@@ -67,6 +67,10 @@ pub enum AppError {
     
     #[error("Not found: {resource}")]
     NotFound { resource: String },
+    
+    // 🔐 Encryption errors
+    #[error("Encryption error: {message}")]
+    Encryption { message: String },
 }
 
 // 🔄 CONVERSION IMPLEMENTATIONS
@@ -88,6 +92,14 @@ impl From<jsonwebtoken::errors::Error> for AppError {
             _ => AppError::InvalidToken {
                 reason: error.to_string(),
             },
+        }
+    }
+}
+
+impl From<crate::encryption::EncryptionError> for AppError {
+    fn from(error: crate::encryption::EncryptionError) -> Self {
+        AppError::Encryption {
+            message: error.to_string(),
         }
     }
 }

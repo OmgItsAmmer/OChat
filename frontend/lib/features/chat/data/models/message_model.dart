@@ -128,6 +128,42 @@ class MessageModel {
     );
   }
 
+  /// Create MessageModel from Supabase JSON response
+  ///
+  /// This handles conversion from Supabase messages table directly.
+  /// Matches the schema in table_schema.md
+  factory MessageModel.fromSupabaseJson(Map<String, dynamic> json) {
+    // The encrypted_content should now come pre-decrypted from RPC functions
+    final decryptedContent = json['encrypted_content'] as String? ?? '';
+
+    return MessageModel(
+      id: json['id'] as String,
+      conversationId: json['session_key_id']
+          as String, // Using session_key_id as conversation reference
+      senderId: json['sender_id'] as String,
+      senderName: null, // Will be populated separately
+      text: decryptedContent, // Now comes pre-decrypted from RPC function
+      timestamp: DateTime.parse(json['created_at'] as String),
+      status: json['is_read'] == true
+          ? MessageStatus.read
+          : MessageStatus.delivered,
+      type: MessageType.fromString(json['message_type'] as String? ?? 'text'),
+      replyToId: null, // Not in current schema
+      fileUrl: json['file_url'] as String?,
+      fileName: null, // Will be extracted from file_url if needed
+      fileSize: json['file_size'] as int?,
+      mimeType: json['mime_type'] as String?,
+      thumbnailUrl: null, // Not in current schema
+      reactions: null, // Not in current schema
+      isEdited: false, // Not in current schema
+      editedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
+      metadata: null, // Not in current schema
+      createdAt: DateTime.parse(json['created_at'] as String),
+    );
+  }
+
   /// Convert MessageModel to JSON (for database or API)
   ///
   /// This prepares the model for storage or transmission.
@@ -203,7 +239,7 @@ class MessageModel {
       editedAt: editedAt ?? this.editedAt,
       metadata: metadata ?? this.metadata,
       createdAt: createdAt ?? this.createdAt,
-      );
+    );
   }
 
   /// Check if this message is from the current user

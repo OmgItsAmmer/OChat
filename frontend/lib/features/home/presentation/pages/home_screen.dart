@@ -13,7 +13,7 @@ class HomeScreen extends StatelessWidget {
     return DefaultTabController(
       length: 3, // Chats, Status, Calls
       initialIndex: 0,
-      child: Scaffold(  
+      child: Scaffold(
         backgroundColor: isDarkMode ? TColors.black : TColors.background,
         appBar: AppBar(
           backgroundColor: isDarkMode ? TColors.black : TColors.primaryLight,
@@ -69,9 +69,15 @@ class HomeScreen extends StatelessWidget {
         ),
         body: const TabBarView(
           children: [
-            ChatsTab(), // ✅ Full Detail
-            // DummyTab(tabName: "Status"),
-            // DummyTab(tabName: "Calls"),
+            ChatsTab(), // ✅ Now shows real users from backend
+            Center(
+                child: Text("Status",
+                    style: TextStyle(
+                        color: TColors.primary))), // Status tab placeholder
+            Center(
+                child: Text("Calls",
+                    style: TextStyle(
+                        color: TColors.primary))), // Calls tab placeholder
           ],
         ),
         floatingActionButton: FloatingActionButton(

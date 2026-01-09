@@ -7,6 +7,7 @@ import 'package:iconsax/iconsax.dart';
 import '../../../../../../core/utils/constants/sizes.dart';
 import '../../../../../../core/utils/constants/text_strings.dart';
 import '../../../../../../core/utils/validators/validation.dart';
+import '../../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../controllers/auth_controller.dart';
 
 class ForgetPassword extends StatelessWidget {

@@ -5,7 +5,8 @@ import '../../../../../../core/utils/constants/colors.dart';
 import '../../../../../../core/utils/constants/sizes.dart';
 import '../../../../../../core/utils/constants/text_strings.dart';
 import '../../../../../../core/utils/helpers/helper_functions.dart';
-import '../../../controllers/auth_controller.dart';
+import '../../../../../authentication/presentation/controllers/auth_controller.dart';
+// import '../../../controllers/auth_controller.dart';
 
 
 

@@ -7,6 +7,7 @@ import '../controllers/chat_controller.dart';
 import 'widgets/chat_input_bar.dart';
 import 'widgets/develpor_action_bar.dart';
 import 'widgets/message_bubble.dart';
+import 'widgets/date_separator.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -61,20 +62,41 @@ class _ChatScreenState extends State<ChatScreen> {
           const DeveloperActionBar(),
           // Message list from controller.currentMessages (reactive)
           Expanded(
-            child: Obx(() => ListView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.only(top: 10),
-                  itemCount: controller.currentMessages.length,
-                  itemBuilder: (context, index) {
-                    final msg = controller.currentMessages[index];
-                    // Compare senderId with current user's id to determine if this message is sent by the user
-                    final currentUserId = controller.getCurrentUserId();
-                    return MessageBubble(
-                      message: msg.text,
-                      isSender: msg.senderId == currentUserId,
-                    );
-                  },
-                )),
+            child: Obx(() {
+              final messages = controller.currentMessages.reversed.toList();
+              final List<Widget> widgets = [];
+
+              // Add date separators and messages in correct order
+              DateTime? lastDate;
+              for (int i = 0; i < messages.length; i++) {
+                final msg = messages[i];
+                final messageDate = DateTime(
+                  msg.timestamp.year,
+                  msg.timestamp.month,
+                  msg.timestamp.day,
+                );
+
+                // Add date separator if date changed (before the message)
+                if (lastDate == null || messageDate != lastDate) {
+                  widgets.add(DateSeparator(date: messageDate));
+                  lastDate = messageDate;
+                }
+
+                // Add message bubble
+                final currentUserId = controller.getCurrentUserId();
+                widgets.add(MessageBubble(
+                  message: msg,
+                  isSender: msg.senderId == currentUserId,
+                ));
+              }
+
+              return ListView.builder(
+                reverse: false,
+                padding: const EdgeInsets.only(top: 10),
+                itemCount: widgets.length,
+                itemBuilder: (context, index) => widgets[index],
+              );
+            }),
           ),
           // Chat input bar: sends message to controller, which calls server
           ChatInputBar(

@@ -70,6 +70,35 @@ class ConversationModel {
     );
   }
 
+  /// Create ConversationModel from Supabase user_conversations view
+  /// This handles the conversion from Supabase user_conversations view
+  factory ConversationModel.fromSupabaseJson(Map<String, dynamic> json) {
+    return ConversationModel(
+      id: json['other_user_id']
+          as String, // Using other_user_id as conversation identifier
+      participant1Id: json['other_user_id'] as String,
+      participant2Id: '', // Will be set by the calling code to current user ID
+      lastMessage: null, // Will be populated separately if needed
+      unreadCount: (json['unread_count'] as num?)?.toInt() ?? 0,
+      createdAt: DateTime.now(), // Not available in the view
+      updatedAt: json['last_message_at'] != null
+          ? DateTime.parse(json['last_message_at'] as String)
+          : DateTime.now(),
+      isArchived: false, // Not in current schema
+      isMuted: false, // Not in current schema
+      otherParticipant: UserModel(
+        id: json['other_user_id'] as String,
+        email: json['other_user_email'] as String,
+        displayName: json['other_user_username'] as String? ??
+            (json['other_user_email'] as String).split('@')[0],
+        avatarUrl: json['other_user_avatar'] as String?,
+        isOnline: json['other_user_online'] as bool? ?? false,
+        lastSeen: null, // Not available in this view
+        createdAt: DateTime.now(), // Not available in this view
+      ),
+    );
+  }
+
   /// Convert ConversationModel to JSON for API requests
   Map<String, dynamic> toJson() {
     return {
@@ -183,10 +212,10 @@ class ConversationModel {
     return otherParticipant?.isOnline ?? false;
   }
 
-  /// Get the other participant's profile picture URL
-  String? getOtherParticipantProfilePicture(String currentUserId) {
-    return otherParticipant?.profilePicture;
-  }
+  // /// Get the other participant's profile picture URL
+  // String? getOtherParticipantProfilePicture(String currentUserId) {
+  //   return otherParticipant?.profilePicture;
+  // }
 
   /// Mark conversation as read (reset unread count)
   ConversationModel markAsRead() {

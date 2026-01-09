@@ -23,7 +23,13 @@ tokio = { version = "1.35", features = ["full"] }
 # 🗄️ DATABASE INTEGRATION
 # SQLx is an async SQL toolkit that provides compile-time checked queries
 # It's much safer than traditional database libraries
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+# Features explained:
+# - runtime-tokio-rustls: Async runtime with TLS support
+# - postgres: PostgreSQL database support
+# - chrono: DateTime support
+# - uuid: UUID support
+# - macros: Enable compile-time query checking
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid", "macros"] }
 
 # 📧 SERIALIZATION/DESERIALIZATION
 # Serde is THE serialization framework for Rust
@@ -71,3 +77,15 @@ actix-web-httpauth = "0.8"
 base64 = "0.21"
 # For URL encoding/decoding (query parameters)
 urlencoding = "2.1"
+
+# 🔐 ENCRYPTION LIBRARIES
+# AES-GCM for symmetric encryption (message content)
+aes-gcm = "0.10"
+# RSA for asymmetric encryption (key exchange)
+rsa = "0.9"
+# SHA-256 for message integrity verification
+sha2 = "0.10"
+# Random number generation for encryption keys
+rand = "0.8"
+# Additional cryptographic utilities
+hex = "0.4"

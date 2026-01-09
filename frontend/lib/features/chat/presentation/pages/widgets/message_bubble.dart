@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/core/utils/constants/colors.dart';
 import 'package:frontend/core/utils/helpers/helper_functions.dart';
+import 'package:frontend/features/chat/data/models/message_model.dart';
 
 class MessageBubble extends StatelessWidget {
-  final String message;
+  final MessageModel message;
   final bool isSender;
 
   const MessageBubble({
@@ -23,6 +24,10 @@ class MessageBubble extends StatelessWidget {
         ? Colors.white
         : (isDarkMode ? Colors.white70 : Colors.black87);
 
+    final timestampColor = isSender
+        ? Colors.white.withOpacity(0.7)
+        : (isDarkMode ? Colors.white54 : Colors.black54);
+
     return Align(
       alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -38,11 +43,49 @@ class MessageBubble extends StatelessWidget {
             bottomRight: Radius.circular(isSender ? 0 : 16),
           ),
         ),
-        child: Text(
-          message,
-          style: TextStyle(color: textColor, fontSize: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              message.text,
+              style: TextStyle(color: textColor, fontSize: 15),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _getFormattedTimestamp(message.timestamp),
+              style: TextStyle(
+                color: timestampColor,
+                fontSize: 11,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ],
         ),
       ),
     );
+  }
+
+  /// Get formatted timestamp for display
+  String _getFormattedTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final messageDate =
+        DateTime(timestamp.year, timestamp.month, timestamp.day);
+
+    String datePrefix;
+    if (messageDate == today) {
+      datePrefix = 'Today';
+    } else if (messageDate == yesterday) {
+      datePrefix = 'Yesterday';
+    } else {
+      datePrefix =
+          '${timestamp.day.toString().padLeft(2, '0')}/${timestamp.month.toString().padLeft(2, '0')}/${timestamp.year}';
+    }
+
+    final timeString =
+        '${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
+
+    return '$datePrefix $timeString';
   }
 }

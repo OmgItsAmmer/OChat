@@ -4,95 +4,269 @@ import 'package:get/get.dart';
 
 import '../../../../../core/utils/constants/colors.dart';
 import '../../../../../core/utils/helpers/helper_functions.dart';
+import '../../controllers/home_controller.dart';
 
+/// 💬 Chats Tab Widget
+///
+/// This widget displays the list of users that can be messaged.
+/// It integrates with the HomeController to fetch users from the Rust backend.
+///
+/// FLUTTER + GETX PATTERN:
+/// - Uses GetX for reactive state management
+/// - Automatically updates UI when data changes
+/// - Handles loading and error states
 class ChatsTab extends StatelessWidget {
   const ChatsTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final chats = [
-      {
-        "name": "Ali",
-        "message": "Bro kal ka kya scene?",
-        "time": "10:24 AM",
-        "unread": 2,
-      },
-      {
-        "name": "Zara",
-        "message": "Thanks for your help!",
-        "time": "9:45 AM",
-        "unread": 0,
-      },
-      {
-        "name": "NUST Class Group",
-        "message": "Assignment ki deadline extend ho gayi!",
-        "time": "Yesterday",
-        "unread": 10,
-      },
-      {
-        "name": "Mom",
-        "message": "Beta khana khaya?",
-        "time": "Yesterday",
-        "unread": 0,
-      },
-    ];
+    // 🔗 GET CONTROLLER
+    // GetX automatically creates and manages the HomeController
+    final homeController = Get.put(HomeController());
     final isDarkMode = THelperFunctions.isDarkMode(context);
-    return ListView.builder(
-      itemCount: chats.length,
-      itemBuilder: (context, index) {
-        final chat = chats[index];
-        return ListTile(
-          onTap: () {
-            Get.toNamed(ORoutes.chatScreen, arguments: {
-              "conversationId": chat["id"],
-              "userName": chat["name"],
-            });
-          },
-          leading: CircleAvatar(
-            radius: 25,
-            backgroundColor: TColors.primary,
-            child: Icon(Icons.person, color: isDarkMode ? TColors.white.withValues(alpha: 0.7) : TColors.primary),
-          ),
-          title: Text(
-            chat["name"] as String,
-            style: TextStyle(fontWeight: FontWeight.bold, color: isDarkMode ? TColors.white.withValues(alpha: 0.7) : TColors.primary),
-          ),
-          subtitle: Text(chat["message"] as String, style: TextStyle(color: isDarkMode ? TColors.white.withValues(alpha: 0.7) : TColors.primary),),
-          trailing: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                chat["time"] as String,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: (chat["unread"] as int) > 0
-                      ? isDarkMode
-                          ? TColors.white.withValues(alpha: 0.7)
-                          : TColors.primary
-                      : TColors.primary,
+
+    return Column(
+      children: [
+        // 🔍 SEARCH BAR
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextField(
+            onChanged: homeController.updateSearchQuery,
+            decoration: InputDecoration(
+              hintText: 'Search users...',
+              hintStyle: TextStyle(
+                color: isDarkMode
+                    ? TColors.white.withOpacity(0.7)
+                    : TColors.primary,
+              ),
+              prefixIcon: Icon(
+                Icons.search,
+                color: isDarkMode
+                    ? TColors.white.withOpacity(0.7)
+                    : TColors.primary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(25),
+                borderSide: BorderSide(
+                  color: isDarkMode
+                      ? TColors.white.withOpacity(0.3)
+                      : TColors.primary.withOpacity(0.3),
                 ),
               ),
-              if ((chat["unread"] as int) > 0)
-                Container(
-                  margin: const EdgeInsets.only(top: 5),
-                  padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(
-                    color: TColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    (chat["unread"] as int).toString(),
-                    style: TextStyle(
-                        color:
-                            isDarkMode ? TColors.white : TColors.primaryLight,
-                        fontSize: 12),
-                  ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(25),
+                borderSide: BorderSide(
+                  color: isDarkMode
+                      ? TColors.white.withOpacity(0.3)
+                      : TColors.primary.withOpacity(0.3),
                 ),
-            ],
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(25),
+                borderSide: BorderSide(
+                  color: TColors.primary,
+                  width: 2,
+                ),
+              ),
+            ),
+            style: TextStyle(
+              color: isDarkMode ? TColors.white : TColors.primary,
+            ),
           ),
-          
-        );
-      },
+        ),
+
+        // 👥 USERS LIST
+        Expanded(
+          child: Obx(() {
+            // 🔄 LOADING STATE
+            if (homeController.isLoadingUsers) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: TColors.primary,
+                ),
+              );
+            }
+
+            // ❌ ERROR STATE
+            if (homeController.errorMessage.isNotEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: isDarkMode
+                          ? TColors.white.withOpacity(0.7)
+                          : TColors.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Failed to load users',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode
+                            ? TColors.white.withOpacity(0.7)
+                            : TColors.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      homeController.errorMessage,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: isDarkMode
+                            ? TColors.white.withOpacity(0.7)
+                            : TColors.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: homeController.refreshUsers,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: TColors.primary,
+                        foregroundColor: TColors.white,
+                      ),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            // 📝 EMPTY STATE
+            if (homeController.filteredUsers.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.people_outline,
+                      size: 64,
+                      color: isDarkMode
+                          ? TColors.white.withOpacity(0.7)
+                          : TColors.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      homeController.searchQuery.isEmpty
+                          ? 'No users found'
+                          : 'No users match your search',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode
+                            ? TColors.white.withOpacity(0.7)
+                            : TColors.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      homeController.searchQuery.isEmpty
+                          ? 'Pull to refresh or check your connection'
+                          : 'Try a different search term',
+                      style: TextStyle(
+                        color: isDarkMode
+                            ? TColors.white.withOpacity(0.7)
+                            : TColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            // 📋 USERS LIST
+            return RefreshIndicator(
+              onRefresh: homeController.refreshUsers,
+              color: TColors.primary,
+              child: ListView.builder(
+                itemCount: homeController.filteredUsers.length,
+                itemBuilder: (context, index) {
+                  final user = homeController.filteredUsers[index];
+
+                  return ListTile(
+                    onTap: () => homeController.startChatWithUser(user),
+                    leading: CircleAvatar(
+                      radius: 25,
+                      backgroundColor: TColors.primary,
+                      backgroundImage: user.avatarUrl != null
+                          ? NetworkImage(user.avatarUrl!)
+                          : null,
+                      child: user.avatarUrl == null
+                          ? Text(
+                              user.initials,
+                              style: const TextStyle(
+                                color: TColors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            )
+                          : null,
+                    ),
+                    title: Text(
+                      user.displayName,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode
+                            ? TColors.white.withOpacity(0.9)
+                            : TColors.primary,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.email,
+                          style: TextStyle(
+                            color: isDarkMode
+                                ? TColors.white.withOpacity(0.7)
+                                : TColors.primary.withOpacity(0.7),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          user.statusText,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: user.isOnline
+                                ? Colors.green
+                                : isDarkMode
+                                    ? TColors.white.withOpacity(0.5)
+                                    : TColors.primary.withOpacity(0.5),
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (user.isOnline)
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        const SizedBox(height: 4),
+                        Icon(
+                          Icons.chevron_right,
+                          color: isDarkMode
+                              ? TColors.white.withOpacity(0.5)
+                              : TColors.primary.withOpacity(0.5),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }

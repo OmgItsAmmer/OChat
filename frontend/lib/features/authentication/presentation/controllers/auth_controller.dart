@@ -189,7 +189,7 @@ class AuthController extends GetxController {
 
         // Navigate to home if user is already authenticated
         // We'll create these routes later
-        Get.offAllNamed('/home');
+        Get.offAllNamed(ORoutes.home);
       }
     } catch (e) {
       if (kDebugMode) {

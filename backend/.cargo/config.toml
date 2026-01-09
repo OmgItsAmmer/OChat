@@ -1,0 +1,7 @@
+# 🛠️ CARGO CONFIGURATION
+# This file configures Cargo build settings for our project
+
+[env]
+# 📝 BUILD CONFIGURATION
+# These settings help with development and debugging
+RUST_BACKTRACE = "1" 

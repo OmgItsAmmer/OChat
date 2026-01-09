@@ -24,7 +24,7 @@ class OChatApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       theme: TAppTheme.lightTheme,
       darkTheme: TAppTheme.darkTheme,
-      initialRoute: ORoutes.home,
+      initialRoute: ORoutes.login,
 
    //   initialBinding: GeneralBindings(),
 

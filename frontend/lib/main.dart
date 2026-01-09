@@ -47,7 +47,7 @@ void _initializeControllers() {
   Get.put(AuthController(), permanent: true);
 
   // Chat controller manages real-time messaging, conversations, WebSocket connections
- // Get.put(ChatController(), permanent: true);
+ Get.put(ChatController(), permanent: true);
 
   // Note: UserController removed as it doesn't exist yet
   // You can add it back when you create the UserController class

@@ -1,131 +1,176 @@
-/// User model representing a user in the OChat system
-/// This model matches the user structure from our Rust backend
+/// 👤 User Model for Chat System
 ///
-/// This class handles JSON serialization manually for better control
-/// and to avoid additional dependencies
+/// This model represents a user in the chat application.
+/// It matches the UserResponse structure from the Rust backend.
+///
+/// FLUTTER CONCEPT: Models are immutable data classes that represent
+/// the structure of data we receive from APIs or store locally.
+///
+/// Best Practice: Keep models simple and focused on data representation.
+/// Business logic should be in controllers or services, not models.
 class UserModel {
-  /// Unique identifier for the user (UUID from database)
+  /// Unique identifier for the user (Supabase user ID)
   final String id;
 
-  /// User's email address (used for authentication)
+  /// User's email address
   final String email;
 
-  /// User's display name
-  final String? name;
+  /// Display name for the user (shown in UI)
+  final String displayName;
 
-  /// Optional profile picture URL
-  final String? profilePicture;
+  /// Optional avatar URL for profile picture
+  final String? avatarUrl;
 
-  /// User's current online status
+  /// Whether the user is currently online
   final bool isOnline;
 
-  /// Timestamp when user was last seen
+  /// When the user was last seen (if not online)
   final DateTime? lastSeen;
 
-  /// When this user account was created
+  /// When the user account was created
   final DateTime createdAt;
 
-  /// When user profile was last updated
-  final DateTime updatedAt;
-
   /// Constructor for UserModel
-  /// All required fields must be provided, optional fields default to null
+  ///
+  /// DART CONCEPT: const constructor for immutable objects
+  /// This helps with performance and memory usage
   const UserModel({
     required this.id,
     required this.email,
-    this.name,
-    this.profilePicture,
+    required this.displayName,
+    this.avatarUrl,
     this.isOnline = false,
     this.lastSeen,
     required this.createdAt,
-    required this.updatedAt,
   });
 
-  /// Create UserModel from JSON response
-  /// This is used when receiving user data from the API
+  /// Create UserModel from JSON response (from Rust backend)
+  ///
+  /// This method converts the JSON response from our Rust API
+  /// into a UserModel object that Flutter can use.
+  ///
+  /// BACKEND INTEGRATION: This matches the UserResponse struct from Rust
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as String,
       email: json['email'] as String,
-      name: json['name'] as String?,
-      profilePicture: json['profile_picture'] as String?,
+      displayName: json['display_name'] as String,
+      avatarUrl: json['avatar_url'] as String?,
       isOnline: json['is_online'] as bool? ?? false,
       lastSeen: json['last_seen'] != null
           ? DateTime.parse(json['last_seen'] as String)
           : null,
       createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  /// Create UserModel from Supabase JSON response
+  ///
+  /// This method converts the JSON response directly from Supabase
+  /// into a UserModel object that Flutter can use.
+  ///
+  /// DIRECT SUPABASE: This matches the users table schema
+  factory UserModel.fromSupabaseJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'] as String,
+      email: json['email'] as String,
+      displayName: json['username'] as String? ?? json['email'].split('@')[0],
+      avatarUrl: json['avatar_url'] as String?,
+      isOnline: json['is_online'] as bool? ?? false,
+      lastSeen: json['last_seen'] != null
+          ? DateTime.parse(json['last_seen'] as String)
+          : null,
+      createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
 
   /// Convert UserModel to JSON for API requests
-  /// This is used when sending user data to the backend
+  ///
+  /// Used when we need to send user data to the backend
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'email': email,
-      'name': name,
-      'profile_picture': profilePicture,
+      'display_name': displayName,
+      'avatar_url': avatarUrl,
       'is_online': isOnline,
       'last_seen': lastSeen?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
   /// Create a copy of this user with some fields updated
-  /// This is useful for updating user state without modifying the original object
-  /// This follows the immutable data pattern which is a best practice in Flutter
+  ///
+  /// DART PATTERN: Immutable objects use copyWith for updates
+  /// This is safer than modifying objects directly
   UserModel copyWith({
     String? id,
     String? email,
-    String? name,
-    String? profilePicture,
+    String? displayName,
+    String? avatarUrl,
     bool? isOnline,
     DateTime? lastSeen,
     DateTime? createdAt,
-    DateTime? updatedAt,
   }) {
     return UserModel(
       id: id ?? this.id,
       email: email ?? this.email,
-      name: name ?? this.name,
-      profilePicture: profilePicture ?? this.profilePicture,
+      displayName: displayName ?? this.displayName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       isOnline: isOnline ?? this.isOnline,
       lastSeen: lastSeen ?? this.lastSeen,
       createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
-  /// Get display name or fallback to email
-  /// This is a helper method for UI components
-  String get displayName => name ?? email.split('@').first;
-
-  /// Check if user has a profile picture
-  bool get hasProfilePicture =>
-      profilePicture != null && profilePicture!.isNotEmpty;
-
-  /// Get formatted last seen text
-  String get lastSeenText {
-    if (isOnline) return 'Online';
-    if (lastSeen == null) return 'Last seen: Never';
-
-    final now = DateTime.now();
-    final difference = now.difference(lastSeen!);
-
-    if (difference.inMinutes < 1) return 'Last seen: Just now';
-    if (difference.inHours < 1)
-      return 'Last seen: ${difference.inMinutes}m ago';
-    if (difference.inDays < 1) return 'Last seen: ${difference.inHours}h ago';
-    if (difference.inDays < 7) return 'Last seen: ${difference.inDays}d ago';
-
-    return 'Last seen: ${lastSeen!.day}/${lastSeen!.month}/${lastSeen!.year}';
+  /// Get initials for avatar display (when no avatar image)
+  ///
+  /// UTILITY METHOD: Extract first letters of display name
+  /// Example: "John Doe" -> "JD"
+  String get initials {
+    final names = displayName.split(' ');
+    if (names.length >= 2) {
+      return '${names[0][0]}${names[1][0]}'.toUpperCase();
+    } else if (names.isNotEmpty) {
+      return names[0][0].toUpperCase();
+    } else {
+      return email[0].toUpperCase();
+    }
   }
+
+  /// Get online status text for UI
+  ///
+  /// UTILITY METHOD: Convert online status to human-readable text
+  String get statusText {
+    if (isOnline) {
+      return 'Online';
+    } else if (lastSeen != null) {
+      final now = DateTime.now();
+      final difference = now.difference(lastSeen!);
+
+      if (difference.inMinutes < 1) {
+        return 'Just now';
+      } else if (difference.inHours < 1) {
+        return '${difference.inMinutes}m ago';
+      } else if (difference.inDays < 1) {
+        return '${difference.inHours}h ago';
+      } else {
+        return '${difference.inDays}d ago';
+      }
+    } else {
+      return 'Offline';
+    }
+  }
+
+  /// Check if this user can be messaged
+  ///
+  /// BUSINESS LOGIC: Determine if we can start a conversation
+  /// (For now, all users can be messaged)
+  bool get canMessage => true;
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, name: $name, isOnline: $isOnline)';
+    return 'UserModel(id: $id, email: $email, displayName: $displayName, isOnline: $isOnline)';
   }
 
   @override
